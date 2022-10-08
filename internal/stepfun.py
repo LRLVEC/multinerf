@@ -268,10 +268,13 @@ def lossfun_distortion(t, w):
   # The loss incurred between all pairs of intervals.
   ut = (t[..., 1:] + t[..., :-1]) / 2
   dut = jnp.abs(ut[..., :, None] - ut[..., None, :])
-  loss_inter = jnp.sum(w * jnp.sum(w[..., None, :] * dut, axis=-1), axis=-1)
+  dt = t[..., 1:] - t[..., :-1]
+  ddt = dt[..., :, None] * dt[..., None, :]
+  loss_inter = jnp.sum(w * jnp.sum(w[..., None, :] * dut * ddt, axis=-1), axis=-1)
 
   # The loss incurred within each individual interval with itself.
-  loss_intra = jnp.sum(w**2 * (t[..., 1:] - t[..., :-1]), axis=-1) / 3
+  # loss_intra = jnp.sum(w**2 * (t[..., 1:] - t[..., :-1]), axis=-1) / 3
+  loss_intra = jnp.sum(w**2 * dt**3, axis=-1) / 3
 
   return loss_inter + loss_intra
 
